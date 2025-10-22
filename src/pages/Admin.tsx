@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Plus, LogOut, ExternalLink } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 
 interface CustomProduct {
   id: string;
@@ -19,6 +20,8 @@ interface CustomProduct {
 
 export default function Admin() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [products, setProducts] = useState<CustomProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -29,14 +32,43 @@ export default function Admin() {
   });
 
   useEffect(() => {
-    // Check if user is authenticated as admin
-    const adminToken = sessionStorage.getItem("adminToken");
-    if (!adminToken) {
-      navigate("/");
-      return;
-    }
+    // Check authentication and admin role
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
 
-    loadProducts();
+      setUser(session.user);
+
+      // Check if user has admin role
+      const { data: roleData, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (error || roleData?.role !== "admin") {
+        toast.error("Você não tem permissão para acessar esta área");
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+      loadProducts();
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const loadProducts = async () => {
@@ -104,8 +136,8 @@ export default function Admin() {
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("adminToken");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate("/");
     toast.success("Sessão encerrada");
   };
@@ -120,7 +152,7 @@ export default function Admin() {
     toast.success("Link copiado!");
   };
 
-  if (loading) {
+  if (loading || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Carregando...</p>

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ProductCard } from "@/components/ProductCard";
 import { QuantityDialog } from "@/components/QuantityDialog";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
-import { AdminAccessButton } from "@/components/AdminAccessButton";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 import cacamba4m3 from "@/assets/cacamba-4m3.jpg";
 import cacamba3m3 from "@/assets/cacamba-3m3.jpg";
 import cacamba5m3 from "@/assets/cacamba-5m3.jpg";
@@ -23,6 +25,7 @@ const products: Product[] = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
@@ -84,7 +87,16 @@ const Index = () => {
         </>
       )}
 
-      <AdminAccessButton />
+      <div className="fixed bottom-6 right-6">
+        <Button
+          onClick={() => navigate("/auth")}
+          variant="outline"
+          size="icon"
+          className="rounded-full shadow-lg"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
     </div>
   );
 };
