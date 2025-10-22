@@ -37,6 +37,35 @@ export const CheckoutDialog = ({
     return value;
   };
 
+  const validateCPF = (cpf: string): boolean => {
+    const numbers = cpf.replace(/\D/g, "");
+    
+    if (numbers.length !== 11) return false;
+    
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1{10}$/.test(numbers)) return false;
+    
+    // Validação do primeiro dígito verificador
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(numbers.charAt(i)) * (10 - i);
+    }
+    let checkDigit = 11 - (sum % 11);
+    if (checkDigit >= 10) checkDigit = 0;
+    if (checkDigit !== parseInt(numbers.charAt(9))) return false;
+    
+    // Validação do segundo dígito verificador
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(numbers.charAt(i)) * (11 - i);
+    }
+    checkDigit = 11 - (sum % 11);
+    if (checkDigit >= 10) checkDigit = 0;
+    if (checkDigit !== parseInt(numbers.charAt(10))) return false;
+    
+    return true;
+  };
+
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCpf(formatCPF(e.target.value));
   };
@@ -47,8 +76,8 @@ export const CheckoutDialog = ({
       return;
     }
 
-    if (cpf.replace(/\D/g, "").length !== 11) {
-      toast.error("CPF inválido");
+    if (!validateCPF(cpf)) {
+      toast.error("CPF inválido. Por favor, verifique o número digitado.");
       return;
     }
 
@@ -74,7 +103,17 @@ export const CheckoutDialog = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao gerar QR Code');
+        
+        // Mensagens de erro mais amigáveis
+        let errorMessage = 'Erro ao gerar QR Code';
+        
+        if (errorData.details?.includes('Cpf do comprador inválido')) {
+          errorMessage = 'CPF inválido. Verifique o número digitado.';
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
