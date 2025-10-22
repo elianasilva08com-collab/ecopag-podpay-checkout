@@ -55,17 +55,34 @@ export const CheckoutDialog = ({
     setLoading(true);
     
     try {
-      // TODO: Integrar com API da Podpay
-      // Por enquanto, vamos simular a geração do QR Code
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulação de QR Code (em produção, virá da API Podpay)
-      const mockQRCode = "00020101021243650016BR.GOV.BCB.PIX013652040000530398654040.015802BR5913Fulano de Tal6008BRASILIA62410503***50300017BR.GOV.BCB.BRCODE01051.0.080450014BR.GOV.BCB.PIX0136504000053039865802BR5913Fulano de Tal6008BRASILIA62410503***";
-      setQrCodeData(mockQRCode);
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pix-qrcode`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            cpf,
+            amount: totalAmount,
+            productName,
+            quantity,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao gerar QR Code');
+      }
+
+      const data = await response.json();
+      setQrCodeData(data.qrCode);
       
       toast.success("QR Code gerado com sucesso!");
     } catch (error) {
-      toast.error("Erro ao gerar QR Code. Tente novamente.");
+      toast.error(error instanceof Error ? error.message : "Erro ao gerar QR Code. Tente novamente.");
       console.error(error);
     } finally {
       setLoading(false);
