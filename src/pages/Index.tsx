@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { QuantityDialog } from "@/components/QuantityDialog";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
+import { AdminAccessButton } from "@/components/AdminAccessButton";
 import cacamba4m3 from "@/assets/cacamba-4m3.jpg";
 import cacamba3m3 from "@/assets/cacamba-3m3.jpg";
 import cacamba5m3 from "@/assets/cacamba-5m3.jpg";
@@ -82,6 +83,8 @@ const Index = () => {
           />
         </>
       )}
+
+      <AdminAccessButton />
     </div>
   );
 };

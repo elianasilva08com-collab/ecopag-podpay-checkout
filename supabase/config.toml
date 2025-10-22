@@ -2,3 +2,6 @@ project_id = "qydtqmrjypbgvifmqxjq"
 
 [functions.generate-pix-qrcode]
 verify_jwt = false
+
+[functions.validate-admin]
+verify_jwt = false
