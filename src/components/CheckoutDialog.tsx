@@ -217,8 +217,19 @@ export const CheckoutDialog = ({
                 </p>
               </div>
 
-              <div className="w-full bg-muted rounded-lg p-4">
-                <p className="text-xs text-muted-foreground break-all">
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(qrCodeData);
+                  toast.success("Código PIX copiado!");
+                }}
+                variant="outline"
+                className="w-full py-4 text-base font-semibold border-2 hover:bg-primary hover:text-primary-foreground"
+              >
+                📋 Copiar Código PIX
+              </Button>
+
+              <div className="w-full bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground break-all text-center">
                   {qrCodeData}
                 </p>
               </div>
